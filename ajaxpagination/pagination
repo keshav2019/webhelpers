@@ -1,0 +1,141 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script>
+
+
+ <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.min.css" />
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" />
+ <link href="flagboot/dist/css/bootstrap-formhelpers.min.css" rel="stylesheet" media="screen">
+ <link href="flag/css/flag-icon.min.css" rel="stylesheet" media="screen">
+ <meta name="viewport" content="width=device-width, initial-scale=1"> 
+ <style>
+ button {
+ margin-right:10px;
+ }
+ </style>
+
+</head>
+<body>
+<button class="btn btn-danger" style="float:left" id="first">&laquo;&laquo;</button>
+<button class="btn btn-danger" style="float:left" id="previous">&laquo;</button>
+<div class="inline" style="float:left" id="pagination">
+</div>
+<button class="btn btn-danger" style="float:left" id="next">&raquo;</button>
+<button class="btn btn-danger" style="float:left" id="last">&raquo;&raquo;</button>
+<table id="mytable" class="table table-striped">
+<thead>
+</thead>
+<tbody>
+</tbody>
+</table>
+
+<script>
+
+var current;
+var max;
+var init=1;
+var size=7;
+$(document).ready(function(){
+	$("#next").click(function(){
+		execute(current + 1);
+		});	
+	$("#previous").click(function(){
+		execute(current - 1);
+	});	
+	
+	$("#first").click(function(){
+		execute(1);
+		});	
+	$("#last").click(function(){
+		execute(max-1);
+	});	
+	execute(1);
+
+});
+
+
+
+
+function execute(myval){
+current=parseInt(myval);
+console.log(current);
+$("#mytable tbody").html("");
+$("#pagination").html("");
+	$.ajax({
+		url:"http://localhost:8080/HibernateTesting/TipsterPagination",
+		method:"get",
+		data:{tipstername:"testtipster",page:myval},
+		success:function(response){	
+			$.each(response,function(index,value){
+				   
+				   max=Math.ceil(value/10)+1;
+				   if(max<8){
+					   size=max-1;
+					   console.log(size);
+				   }
+				   else{
+					   if(current>3){
+						   init=current-3;
+						   while(init+6>=max){
+								init=init-1;  	
+						   }
+					   }
+					   else {
+						   init=1;
+					   }
+				   }
+				 
+				   
+				  for(var i=init;i<init+size;i++){
+					$("#pagination").append("<button id='"+i+"' class='btn btn-primary' onclick='execute(this.id)'>"+i+"</buton>")
+					$("#pagination button[id='"+myval+"']").addClass("active");
+				}
+				
+				if($("#pagination button[id='"+1+"']").hasClass("active")){	
+					$("#previous").prop("disabled",true);
+					$("#first").prop("disabled",true);
+				}
+				else{
+					$("#previous").prop("disabled",false);
+					$("#first").prop("disabled",false);
+				}
+				
+				if($("#pagination button[id='"+parseInt(max-1)+"']").hasClass("active")){	
+					$("#next").prop("disabled",true);
+					$("#last").prop("disabled",true);
+				}
+				else{
+					$("#next").prop("disabled",false);
+					$("#last").prop("disabled",false);
+				}
+				
+				
+				 var index1=JSON.parse(index); 
+				$.each(index1,function(key,myvalue){
+					$("#mytable tbody").append("<tr><td>"+myvalue.event+"</td><td>"+myvalue.market+"</td><td>"+myvalue.prediction+"</td><td>"+myvalue.odds+"</td><td>"+myvalue.units+"</td>td>"+myvalue.bookmaker+"</td><td>"+myvalue.result+"</td><td>"+myvalue.profit+"</td></tr>")
+				});
+			});
+			
+			
+			
+		}
+		
+		
+	});
+
+	
+
+	
+}
+</script>
+</body>
+</html>
